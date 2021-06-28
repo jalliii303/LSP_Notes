@@ -1,0 +1,196 @@
+0011_LSP_Parent_Child
+
+*******************************
+
+-----------------------------------------------------------
+Excersie -:
+
+printf("Hello....PID=%d    PPID=%d\n",getpid(),getppid());
+fork();
+fork();
+fork();
+printf("Hai....PID=%d    PPID=%d\n",getpid(),getppid());
+while(1);
+
+
+How many process are creating -: 8 process
+
+******************************************************
+
+Ex-1 
+
+#include <stdio.h>
+#include <sys/types.h>
+#include <unistd.h>
+int main()
+{
+
+	     int ret;
+
+	      printf("Hello.....\n");
+	      ret=400;
+	     
+		ret=fork();
+		if(ret==0)//child
+		{
+		 	printf("In child ret=%d   pid=%d  ppid=%d\n",ret,getpid(),getppid());
+		}
+		else  //parent
+		{
+		 	printf("In parent ret=%d   pid=%d  ppid=%d\n",ret,getpid(),getppid());
+		}
+		//comman code  /* child and parent bpth are executes*/
+		
+
+		while(1);
+
+ return 0;
+
+
+}
+Terminal 1 -: pts/25
+
+anil@INDCP13YY2-L:~/Desktop/Class/Linux/LSP/0012_LSP$ ./a.out 
+Hello.....
+In parent ret=29092   pid=29091  ppid=28508
+In child ret=0   pid=29092  ppid=29091
+
+Terminal 1 -:
+
+anil@INDCP13YY2-L:~/Desktop/Class/Linux/LSP/0012_LSP$ ps -e | grep pts/25
+28508 pts/25   00:00:00 bash
+29091 pts/25   00:00:03 a.out
+29092 pts/25   00:00:03 a.out
+****************************************************
+Note -: if we write comman code between if and else then it will give syntectical error.
+
+
+
+Ex-2
+
+#include <stdio.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <stdlib.h>
+int main()
+{
+
+	     int ret;
+
+	      printf("Hello.....\n");
+	      ret=400;
+	     
+		ret=fork();
+		if(ret==0)//child
+		{
+		 	printf("In child ret=%d   pid=%d  ppid=%d\n",ret,getpid(),getppid());
+			system("pwd");
+		}
+		else  //parent
+		{
+		 	printf("In parent ret=%d   pid=%d  ppid=%d\n",ret,getpid(),getppid());
+			system("ls");
+		}
+		printf("Hai.......\n");
+		//comman code  /* child and parent bpth are executes*/
+ return 0;
+}
+anil@INDCP13YY2-L:~/Desktop/Class/Linux/LSP/0012_LSP$ ./a.out 
+Hello.....
+In parent ret=29546   pid=29545  ppid=28508
+In child ret=0   pid=29546  ppid=29545
+/home/anil/Desktop/Class/Linux/LSP/0012_LSP
+Hai.......
+ 0001_Fork.c  0002_Fork.c  0003_Fork_Sleep.c  0004_Fork_System_Commands.c  0012_LSP_Parent_Child.patch  a.out  Process.c
+
+
+Note -: after uncomment while(1)
+
+anil@INDCP13YY2-L:~/Desktop/Class/Linux/LSP/0012_LSP$ ./a.out 
+Hello.....
+In parent ret=29654   pid=29653  ppid=28508
+In child ret=0   pid=29654  ppid=29653
+/home/anil/Desktop/Class/Linux/LSP/0012_LSP
+Hai.......
+0001_Fork.c  0002_Fork.c  0003_Fork_Sleep.c  0004_Fork_System_Commands.c  0012_LSP_Parent_Child.patch  a.out  Process.c
+Hai.......
+*******************************************************************
+Ex-3
+
+   if(fork()==0)
+   { 
+     //y+1
+   
+   }
+   else
+   {
+	     //Y
+	     if(fork()==0)
+	      { 
+		  //Y+2
+	      }
+	      else
+	      {
+				 //Y
+				 if(fork()==0)
+				  {
+				    //Y+3         
+				  }
+				  else
+				  {
+				     //Y
+
+				    
+				  }  //Y,Y+3
+				       
+	      }   //Y ,Y+2,Y+3
+    
+   }  //Y ,Y+1 ,Y+2,Y+3
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

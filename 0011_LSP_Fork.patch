@@ -1,0 +1,372 @@
+0011_LSP_Fork
+
+*******************************
+
+NAME
+       fork - create a child process
+
+SYNOPSIS
+       #include <sys/types.h>
+       #include <unistd.h>
+
+       pid_t fork(void);
+
+DESCRIPTION
+       fork() creates a new process by duplicating the calling process.  The new process is referred to as the child process.  The calling process is referred to as the parent process.
+
+       The  child  process  and the parent process run in separate memory spaces.  At the time of fork() both memory spaces have the same content.  Memory writes, file mappings (mmap(2)), and unmap‐
+       pings (munmap(2)) performed by one of the processes do not affect the other.
+
+       The child process is an exact duplicate of the parent process except for the following points:
+
+       *  The child has its own unique process ID, and this PID does not match the ID of any existing process group (setpgid(2)) or session.
+
+       *  The child's parent process ID is the same as the parent's process ID.
+
+       *  The child does not inherit its parent's memory locks (mlock(2), mlockall(2)).
+
+       *  Process resource utilizations (getrusage(2)) and CPU time counters (times(2)) are reset to zero in the child.
+
+       *  The child's set of pending signals is initially empty (sigpending(2)).
+
+       *  The child does not inherit semaphore adjustments from its parent (semop(2)).
+
+       *  The child does not inherit process-associated record locks from its parent (fcntl(2)).  (On the other hand, it does inherit fcntl(2) open file description locks and flock(2) locks from its
+          parent.)
+
+       *  The child does not inherit timers from its parent (setitimer(2), alarm(2), timer_create(2)).
+
+       *  The  child  does  not  inherit  outstanding  asynchronous I/O operations from its parent (aio_read(3), aio_write(3)), nor does it inherit any asynchronous I/O contexts from its parent (see
+          io_setup(2)).
+
+       The process attributes in the preceding list are all specified in POSIX.1.  The parent and child also differ with respect to the following Linux-specific process attributes:
+
+       *  The child does not inherit directory change notifications (dnotify) from its parent (see the description of F_NOTIFY in fcntl(2)).
+
+       *  The prctl(2) PR_SET_PDEATHSIG setting is reset so that the child does not receive a signal when its parent terminates.
+
+       *  The default timer slack value is set to the parent's current timer slack value.  See the description of PR_SET_TIMERSLACK in prctl(2).
+
+       *  Memory mappings that have been marked with the madvise(2) MADV_DONTFORK flag are not inherited across a fork().
+
+       *  Memory in address ranges that have been marked with the madvise(2) MADV_WIPEONFORK flag is zeroed in the child after a fork().  (The MADV_WIPEONFORK setting  remains  in  place  for  those
+          address ranges in the child.)
+
+       *  The termination signal of the child is always SIGCHLD (see clone(2)).
+
+
+
+Notes 
+-: fork create a new process by duplicating calling process.
+-: The new process , reffered to as the child , is an exact dupicate of calling process, refffered to as the parent , except the following point
+-: The child has its own Pid and this Pid doesn't match
+
+
+Ex-1
+
+Terminal-:  pts/17
+
+
+
+#include <stdio.h>
+#include <sys/types.h>
+#include <unistd.h>
+int main()
+{
+
+
+		printf("Hello....\n");
+		fork();
+		printf("Hai......\n");
+		while(1);
+
+ return 0;
+
+
+}
+
+./a.out
+
+Hello....
+Hai......
+Hai......
+       // in while(1);
+
+
+Observation -: other terminal
+
+
+anil@INDCP13YY2-L:~/Desktop/Class/Linux/LSP/0011_LSP$ ps -e | grep pts/17
+24408 pts/17   00:00:00 bash
+24572 pts/17   00:00:06 a.out
+24573 pts/17   00:00:06 a.out
+
+
+Note -: after fork() , whatever the statement you written once executed by ther parent and once executed by child.
+
+
+Ex-2 
+**************************************
+
+#include <stdio.h>
+#include <sys/types.h>
+#include <unistd.h>
+int main()
+{
+
+
+		printf("Hello....PID=%d    PPID=%d\n",getpid(),getppid());
+		fork();
+		printf("Hai....PID=%d    PPID=%d\n",getpid(),getppid());
+	//	while(1);
+
+ return 0;
+
+
+}
+
+Output -: anil@INDCP13YY2-L:~/Desktop/Class/Linux/LSP/0011_LSP$ ./a.out 
+	Hello....PID=24763    PPID=24408
+	Hai....PID=24763    PPID=24408
+	Hai....PID=24764    PPID=24763
+
+**********************************************************************************
+
+Ex-3
+
+#include <stdio.h>
+#include <sys/types.h>
+#include <unistd.h>
+int main()
+{
+
+
+		printf("Hello....PID=%d    PPID=%d\n",getpid(),getppid());
+		fork();
+		fork();
+		printf("Hai....PID=%d    PPID=%d\n",getpid(),getppid());
+		while(1);
+
+ return 0;
+
+
+}
+
+output anil@INDCP13YY2-L:~/Desktop/Class/Linux/LSP/0011_LSP$ ./a.out 
+
+Hello....PID=24895    PPID=24408
+Hai....PID=24895    PPID=24408
+Hai....PID=24897    PPID=24895
+Hai....PID=24896    PPID=24895
+Hai....PID=24898    PPID=24896
+
+-:
+      Y            Y+1           Y+2
+   PID=24895     PID=24896     PID=24898
+
+     Y+3 
+   PID=24897
+
+
+
+-----------------------------------------------------------
+Excersie -:
+
+printf("Hello....PID=%d    PPID=%d\n",getpid(),getppid());
+fork();
+fork();
+fork();
+printf("Hai....PID=%d    PPID=%d\n",getpid(),getppid());
+while(1);
+
+
+How many process are creating -:
+
+******************************************************
+
+Note-:
+
+Return Value of fork() -:on sucess , The Pid of the child process is returned in to parent and '0'(Zero) is returned in child.
+                       -: On failure -1 is returned in the parent, no child process is created and errorno is set properly.
+
+EX- 4
+
+#include <stdio.h>
+#include <sys/types.h>
+#include <unistd.h>
+int main()
+{
+
+	int ret;
+
+		printf("Hello....PID=%d    PPID=%d\n",getpid(),getppid());
+		
+		ret=fork();
+		
+		printf("Hai....PID=%d    PPID=%d   Return=%d\n",getpid(),getppid(),ret);
+
+		while(1);
+
+ return 0;
+
+
+}
+
+OUtput -:
+
+
+Hello....PID=25752    PPID=24408
+Hai....PID=25752    PPID=24408   Return=25753     //(parent)
+Hai....PID=25753    PPID=25752   Return=0         //(child)  
+
+******************************************************************************************
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
